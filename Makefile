@@ -8,7 +8,7 @@ CXXFLAGS = -Wall -pthread
 TARGET = Lilith
 
 # Quellen
-SRC := $(wildcard code/*.cpp)
+SRC := $(wildcard Code/*.cpp)
 
 # Linux-Build (default)
 all: $(TARGET)
