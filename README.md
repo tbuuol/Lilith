@@ -4,14 +4,17 @@ Lilith ist ein schlanker, kompromisslos direkter C++-RPC-Proxy für deine Blockc
 Kein Framework-Zirkus, keine Magie, nur pure, rohe Kontrolle.
 Das Ding macht genau eine Sache – aber die macht es richtig:
 
-Es nimmt lokale HTTP-Requests an → leitet deinen JSON-RPC Payload an den passenden Node weiter → liefert die Antwort zurück.
+Es nimmt lokale HTTP-Requests an  
+→ leitet deinen JSON-RPC Payload an den passenden Node weiter  
+→ liefert die Antwort zurück.
+
 Mehr Minimalismus geht nur noch, wenn man es einfach lässt.
 
 ### Warum Lilith?
 
-Weil Browser CORS hassen.
-Und Nodes Browser hassen.
-Und du keinen Bock auf PHP-Brücken, Bounce-Proxys oder Node.js-Mammut-Prozesse hast.
+Weil Browser CORS hassen.  
+Und Nodes Browser hassen.  
+Und du keinen Bock auf PHP-Brücken, Bounce-Proxys oder Node.js-Mammut-Prozesse hast.  
 
 ### Lilith löst genau das:
 
