@@ -48,8 +48,8 @@ Und du keinen Bock auf PHP-Brücken, Bounce-Proxys oder Node.js-Mammut-Prozesse 
 ## Sicherheit?
 
 Lilith läuft lokal.
-If you expose this to the internet, Lilith wird dich höchstpersönlich ohrfeigen.
-Extern → bitte Reverse Proxy + Auth davor.
+If you expose this to the internet, Lilith wird dich höchstpersönlich ohrfeigen.  
+Extern → bitte Reverse Proxy + Auth davor.  
 Oder du lebst gefährlich, dein Karma.
 
 
