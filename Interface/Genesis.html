@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<title>Lilith API Console</title>
+<style>
+    body { font-family: Consolas, monospace; background:#111; color:#0f0; padding:20px; }
+    input, textarea, select, button { font-family:inherit; background:#222; color:#0f0; border:1px solid #0f0; padding:8px; margin:5px; }
+    textarea { width:100%; height:180px; }
+    button { background:#030; cursor:pointer; }
+    .node { width:150px; }
+    pre { background:#000; padding:10px; overflow:auto; }
+</style>
+</head>
+<body>
+<h1>Lilith API Console</h1>
+
+<label>Node auswählen:</label><br>
+<select id="nodeid" class="node">
+    <option value="Kotia">Kotia</option>
+    <option value="Fairbrix">Fairbrix</option>
+    <!-- füge hier später dynamisch neue Nodes ein, falls du willst -->
+</select><br><br>
+
+<label>RPC-Methode (z. B. getblockcount, getinfo, getbalance):</label><br>
+<input type="text" id="method" value="getblockcount" style="width:300px"><br><br>
+
+<label>Parameter (JSON, optional):</label><br>
+<textarea id="params" placeholder='["DEINE_ADRESSE"] oder [] oder leer lassen'>[]</textarea><br><br>
+
+<button onclick="send()">Abschicken</button>
+<button onclick="document.getElementById('result').innerText=''">Clear</button>
+
+<h2>Response:</h2>
+<pre id="result"></pre>
+
+<script>
+async function send() {
+    const node   = document.getElementById('nodeid').value;
+    const method = document.getElementById('method').value.trim();
+    const params = document.getElementById('params').value.trim();
+
+    let paramsArray = [];
+    if (params && params !== '[]') {
+        try { paramsArray = JSON.parse(params); }
+        catch(e) { alert("Params sind kein gültiges JSON-Array!"); return; }
+    }
+
+    const payload = {
+        jsonrpc: "2.0",
+        id: node,           // <-- das ist dein "id" Feld, das du im C++-Code abfragst
+        method: method,
+        params: paramsArray
+    };
+
+    try {
+        const response = await fetch('http://127.0.0.1:10666', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+
+        const text = await response.text();
+        document.getElementById('result').innerText = text;
+
+        // optional: hübsch formatierte JSON-Ausgabe
+        try {
+            const obj = JSON.parse(text);
+            document.getElementById('result').innerText = JSON.stringify(obj, null, 2);
+        } catch(e) {}
+    } catch (err) {
+        document.getElementById('result').innerText = 'Fehler: ' + err;
+    }
+}
+</script>
+</body>
+</html>
