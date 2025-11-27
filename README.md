@@ -15,11 +15,11 @@ Und du keinen Bock auf PHP-Brücken, Bounce-Proxys oder Node.js-Mammut-Prozesse 
 
 ### Lilith löst genau das:
 
-✔️ CORS-Preflights (OPTIONS) sauber beantworten
-✔️ POST-Payload direkt an deine Node weiterreichen
-✔️ Jeder Node läuft als eigenständige Verbindung (via Nakamoto)
-✔️ Jeder Client wird in einen eigenen Thread geworfen
-✔️ API bleibt blitzschnell & ohne Abhängigkeiten
+✔️ CORS-Preflights (OPTIONS) sauber beantworten  
+✔️ POST-Payload direkt an deine Node weiterreichen  
+✔️ Jeder Node läuft als eigenständige Verbindung (via Nakamoto)  
+✔️ Jeder Client wird in einen eigenen Thread geworfen  
+✔️ API bleibt blitzschnell & ohne Abhängigkeiten  
 
 
 
