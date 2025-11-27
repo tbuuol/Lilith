@@ -28,7 +28,7 @@ Und du keinen Bock auf PHP-Brücken, Bounce-Proxys oder Node.js-Mammut-Prozesse 
 
 ## Architektur – ultrakurz
 
-# ApiServer
+### ApiServer
 
 - Öffnet einen TCP-Socket
 - Regelt CORS
@@ -36,7 +36,7 @@ Und du keinen Bock auf PHP-Brücken, Bounce-Proxys oder Node.js-Mammut-Prozesse 
 - Startet pro Client einen Thread (detached, du Tier!)
 
 
-# Nakamoto
+### Nakamoto
 
 - Wrappt libcurl
 - Baut stabile JSON-RPC Verbindungen
