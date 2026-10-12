@@ -2,20 +2,20 @@
 CXX = g++
 
 # Flags
-CXXFLAGS = -Wall -pthread
+CXXFLAGS = -std=c++17 -Wall -Wextra -Wpedantic -pthread
 
-# Ziel
+# Target
 TARGET = Lilith
 
-# Quellen
+# Sources
 SRC := $(wildcard Code/*.cpp)
 
-# Linux-Build (default)
+# Linux build (default)
 all: $(TARGET)
 
 $(TARGET): $(SRC)
 	$(CXX) $(CXXFLAGS) -o $@ $^ -lcurl -lssl -lcrypto
 
-# Aufräumen
+# Clean build artifacts
 clean:
 	rm -f $(TARGET) *.o

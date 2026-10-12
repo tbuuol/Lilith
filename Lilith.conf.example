@@ -1,0 +1,20 @@
+# Copy this file to Lilith.conf and enter your RPC credentials.
+# Restrict access to your user: chmod 600 Lilith.conf
+
+[server]
+port = 9999
+ui_port = 10000
+# Only the exact browser origins listed here may send requests.
+allowed_origins = http://127.0.0.1:10000,http://localhost:10000
+
+[node:Bitcoin]
+host = 127.0.0.1
+port = 8332
+user = CHANGE_ME
+password = CHANGE_ME
+
+[node:Kotia]
+host = 127.0.0.1
+port = 10001
+user = CHANGE_ME
+password = CHANGE_ME

@@ -1,77 +1,344 @@
 <!DOCTYPE html>
-<html lang="de">
+<html lang="en">
 <head>
 <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Lilith API Console</title>
 <style>
-    body { font-family: Consolas, monospace; background:#111; color:#0f0; padding:20px; }
-    input, textarea, select, button { font-family:inherit; background:#222; color:#0f0; border:1px solid #0f0; padding:8px; margin:5px; }
-    textarea { width:100%; height:180px; }
-    button { background:#030; cursor:pointer; }
-    .node { width:150px; }
-    pre { background:#000; padding:10px; overflow:auto; }
+    :root {
+        color-scheme: dark;
+        --bg: #070b09;
+        --panel: rgba(10, 19, 14, .96);
+        --panel-raised: #0d1711;
+        --line: #214b31;
+        --green: #65ff91;
+        --green-dim: #8bb99a;
+        --text: #d4f4dc;
+        --muted: #799582;
+        --danger: #ff8278;
+        --mono: Consolas, "SFMono-Regular", Menlo, monospace;
+    }
+    * { box-sizing: border-box; }
+    body {
+        position: relative;
+        isolation: isolate;
+        min-height: 100vh;
+        margin: 0;
+        padding: clamp(18px, 3vw, 42px);
+        color: var(--text);
+        background:
+            linear-gradient(rgba(67, 255, 127, .025) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(67, 255, 127, .025) 1px, transparent 1px),
+            radial-gradient(ellipse at 12% 0%, #102319 0, transparent 42%),
+            var(--bg);
+        background-size: 32px 32px, 32px 32px, auto, auto;
+        font: 14px/1.5 var(--mono);
+    }
+    .matrix-rain { position: fixed; z-index: 0; inset: 0; overflow: hidden; pointer-events: none; opacity: .12; }
+    .matrix-rain span {
+        position: absolute;
+        top: -110%;
+        left: var(--x);
+        color: var(--green);
+        font-size: 12px;
+        line-height: 1.7;
+        text-shadow: 0 0 8px rgba(101,255,145,.55);
+        animation: matrix-fall var(--duration) linear var(--delay) infinite;
+        will-change: transform;
+    }
+    .matrix-rain span::before { content: attr(data-code); white-space: pre; }
+    .matrix-rain span:nth-child(2n) { opacity: .55; font-size: 10px; }
+    .matrix-rain span:nth-child(3n) { text-shadow: 0 0 12px rgba(101,255,145,.8); }
+    .app { position: relative; z-index: 1; width: min(1320px, 100%); margin: 0 auto; }
+    .topbar { position: relative; margin: 0 0 24px; padding: 0 2px 18px; border-bottom: 1px solid var(--line); }
+    .eyebrow, .panel-kicker { color: var(--green); font-size: 11px; letter-spacing: .16em; text-transform: uppercase; }
+    .eyebrow::before {
+        display: inline-block;
+        width: 7px;
+        height: 7px;
+        margin: 0 9px 1px 0;
+        border-radius: 50%;
+        background: var(--green);
+        box-shadow: 0 0 10px var(--green);
+        content: "";
+        animation: status-pulse 2.4s ease-in-out infinite;
+    }
+    h1 { display: flex; align-items: baseline; gap: 12px; margin: 7px 0 3px; color: var(--green); font-size: clamp(26px, 4vw, 36px); letter-spacing: -.05em; text-shadow: 0 0 22px rgba(101,255,145,.2); }
+    h1 span { color: #b5ffc8; }
+    h1 small { color: var(--muted); font-size: 11px; font-weight: 400; letter-spacing: .14em; }
+    .subtitle { margin: 0; color: var(--muted); }
+    .workspace { display: grid; grid-template-columns: minmax(290px, 360px) minmax(0, 1fr); align-items: start; gap: 18px; }
+    .panel { min-width: 0; padding: 20px; border: 1px solid var(--line); border-radius: 8px; background: var(--panel); box-shadow: 0 14px 40px rgba(0,0,0,.24), inset 0 1px rgba(190,255,205,.025); }
+    .panel-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 0 0 17px; }
+    .panel-heading h2 { margin: 0; color: var(--text); font-size: 15px; font-weight: 600; }
+    .panel-kicker { color: var(--muted); font-size: 10px; letter-spacing: .1em; white-space: nowrap; }
+    .field { margin: 0 0 19px; }
+    label { display: block; margin: 0 0 7px; color: #a9cbb4; font-size: 12px; }
+    select, textarea, button {
+        width: 100%;
+        border: 1px solid #31583d;
+        border-radius: 5px;
+        outline: none;
+        background: #080e0a;
+        color: var(--green);
+        font: inherit;
+        transition: border-color .15s ease, box-shadow .15s ease, background .15s ease;
+    }
+    select { min-height: 43px; padding: 10px 12px; }
+    select:focus, textarea:focus { border-color: var(--green); box-shadow: 0 0 0 3px rgba(101,255,145,.09); }
+    select:disabled { color: #607568; cursor: not-allowed; }
+    textarea { display: block; min-height: 154px; padding: 12px; resize: vertical; color: var(--text); }
+    .field-hint { margin: 6px 2px 0; color: var(--muted); font-size: 11px; }
+    .actions { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; }
+    button { min-height: 42px; padding: 9px 12px; color: var(--green); cursor: pointer; }
+    button:hover { border-color: var(--green); background: #102318; box-shadow: 0 0 18px rgba(101,255,145,.08); }
+    button.primary { border-color: #4dd979; background: #12351e; color: #caffd6; }
+    .output-column { display: grid; min-width: 0; gap: 18px; }
+    .output-panel { padding: 17px; }
+    pre {
+        min-width: 0;
+        margin: 0;
+        padding: 14px;
+        overflow: auto;
+        border: 1px solid #1d3826;
+        border-radius: 5px;
+        background: #050907;
+        color: #b8e9c5;
+        font: 12px/1.55 var(--mono);
+        tab-size: 4;
+        white-space: pre-wrap;
+        overflow-wrap: anywhere;
+        scrollbar-color: #31583d #080e0a;
+    }
+    #command-help { height: clamp(230px, 34vh, 370px); }
+    #result { height: clamp(150px, 23vh, 250px); }
+    .hint { color: var(--green-dim); font-size: 11px; }
+    @keyframes matrix-fall {
+        from { transform: translateY(0); }
+        to { transform: translateY(220vh); }
+    }
+    @keyframes status-pulse {
+        0%, 100% { opacity: .55; box-shadow: 0 0 5px rgba(101,255,145,.45); }
+        50% { opacity: 1; box-shadow: 0 0 13px rgba(101,255,145,.95); }
+    }
+    @media (max-width: 850px) {
+        .workspace { grid-template-columns: minmax(250px, .8fr) minmax(0, 1.2fr); gap: 12px; }
+        .panel { padding: 15px; }
+        .output-column { gap: 12px; }
+    }
+    @media (max-width: 650px) {
+        body { padding: 16px; }
+        .workspace { grid-template-columns: minmax(0, 1fr); }
+        .output-column { grid-template-columns: minmax(0, 1fr); }
+        #command-help { height: 280px; }
+        #result { height: 210px; }
+        h1 { flex-wrap: wrap; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+        *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; scroll-behavior: auto !important; }
+    }
 </style>
 </head>
 <body>
-<h1>Lilith API Console</h1>
+<div class="matrix-rain" aria-hidden="true">
+    <span style="--x:7%;--duration:24s;--delay:-8s" data-code="1&#10;0&#10;1&#10;1&#10;0&#10;1&#10;0&#10;0&#10;1&#10;0&#10;1"></span>
+    <span style="--x:19%;--duration:31s;--delay:-19s" data-code="0&#10;1&#10;0&#10;0&#10;1&#10;1&#10;0&#10;1&#10;0&#10;1"></span>
+    <span style="--x:34%;--duration:27s;--delay:-13s" data-code="1&#10;1&#10;0&#10;1&#10;0&#10;0&#10;1&#10;0&#10;1&#10;1"></span>
+    <span style="--x:48%;--duration:35s;--delay:-27s" data-code="0&#10;0&#10;1&#10;0&#10;1&#10;1&#10;0&#10;0&#10;1&#10;0"></span>
+    <span style="--x:63%;--duration:29s;--delay:-17s" data-code="1&#10;0&#10;0&#10;1&#10;1&#10;0&#10;1&#10;0&#10;0&#10;1"></span>
+    <span style="--x:77%;--duration:33s;--delay:-23s" data-code="0&#10;1&#10;1&#10;0&#10;1&#10;0&#10;0&#10;1&#10;1&#10;0"></span>
+    <span style="--x:91%;--duration:26s;--delay:-11s" data-code="1&#10;0&#10;1&#10;0&#10;0&#10;1&#10;1&#10;0&#10;1&#10;0"></span>
+</div>
+<div class="app">
+    <header class="topbar">
+        <div class="eyebrow">Local RPC workspace</div>
+        <h1><span>›</span> Lilith <small>NODE CONSOLE</small></h1>
+        <p class="subtitle">Inspect node commands and send JSON-RPC requests.</p>
+    </header>
 
-<label>Node auswählen:</label><br>
-<select id="nodeid" class="node">
-    <option value="Kotia">Kotia</option>
-    <option value="Fairbrix">Fairbrix</option>
-    <!-- füge hier später dynamisch neue Nodes ein, falls du willst -->
-</select><br><br>
+    <main class="workspace">
+        <section class="panel request-panel" aria-labelledby="request-title">
+            <div class="panel-heading">
+                <h2 id="request-title">Request builder</h2>
+                <span class="panel-kicker">01 / REQUEST</span>
+            </div>
 
-<label>RPC-Methode (z. B. getblockcount, getinfo, getbalance):</label><br>
-<input type="text" id="method" value="getblockcount" style="width:300px"><br><br>
+            <div class="field">
+                <label for="nodeid">Node</label>
+                <select id="nodeid">
+                    <option value="" disabled selected>Loading nodes…</option>
+                </select>
+            </div>
 
-<label>Parameter (JSON, optional):</label><br>
-<textarea id="params" placeholder='["DEINE_ADRESSE"] oder [] oder leer lassen'>[]</textarea><br><br>
+            <div class="field">
+                <label for="method">RPC command</label>
+                <select id="method" disabled>
+                    <option value="" selected>Loading commands…</option>
+                </select>
+                <div id="command-count" class="field-hint">Waiting for node list…</div>
+            </div>
 
-<button onclick="send()">Abschicken</button>
-<button onclick="document.getElementById('result').innerText=''">Clear</button>
+            <div class="field">
+                <label for="params">Parameters <span class="hint">JSON array</span></label>
+                <textarea id="params" placeholder='["YOUR_ADDRESS"] or []'>[]</textarea>
+                <div class="field-hint">Use the command details panel to check required and optional arguments.</div>
+            </div>
 
-<h2>Response:</h2>
-<pre id="result"></pre>
+            <div class="actions">
+                <button id="send-button" class="primary" type="button">Send request</button>
+                <button id="clear-button" type="button">Clear response</button>
+            </div>
+        </section>
+
+        <section class="output-column" aria-label="Command help and response">
+            <section class="panel output-panel" aria-labelledby="help-title">
+                <div class="panel-heading">
+                    <h2 id="help-title">Command details</h2>
+                    <span class="panel-kicker">02 / NODE HELP</span>
+                </div>
+                <pre id="command-help">Select a node and an RPC command to view its usage, required parameters, and optional parameters.</pre>
+            </section>
+
+            <section class="panel output-panel" aria-labelledby="response-title">
+                <div class="panel-heading">
+                    <h2 id="response-title">Response</h2>
+                    <span class="panel-kicker">03 / OUTPUT</span>
+                </div>
+                <pre id="result"></pre>
+            </section>
+        </section>
+    </main>
+</div>
 
 <script>
+let helpRequestId = 0;
+
+async function loadNodes() {
+    const select = document.getElementById('nodeid');
+    try {
+        const response = await fetch('http://127.0.0.1:9999/nodes');
+        if (!response.ok) throw new Error('HTTP ' + response.status);
+        const data = await response.json();
+        data.nodes.sort((a, b) => Number(b.available) - Number(a.available) || a.id.localeCompare(b.id));
+        select.replaceChildren();
+        for (const node of data.nodes) {
+            const option = document.createElement('option');
+            option.value = node.id;
+            option.textContent = `${node.id} — ${node.available ? 'reachable' : 'unavailable'}`;
+            option.dataset.commands = JSON.stringify(node.commands || []);
+            select.appendChild(option);
+        }
+        if (select.options.length) updateCommands();
+        if (!data.nodes.some(node => node.available))
+            document.getElementById('result').textContent = 'No node is reachable. Check the Lilith console for details.';
+    } catch (err) {
+        document.getElementById('result').textContent = 'Could not load the node list: ' + err;
+    }
+}
+
+function updateCommands() {
+    const nodeOption = document.querySelector('#nodeid option:checked');
+    const select = document.getElementById('method');
+    const commands = nodeOption ? JSON.parse(nodeOption.dataset.commands || '[]') : [];
+    const placeholder = document.createElement('option');
+    placeholder.value = '';
+    placeholder.textContent = commands.length ? 'Select an RPC command…' : 'No commands available';
+    placeholder.disabled = true;
+    placeholder.selected = true;
+    select.replaceChildren(placeholder, ...commands.map(command => {
+        const option = document.createElement('option');
+        option.value = command;
+        option.textContent = command;
+        return option;
+    }));
+    select.disabled = commands.length === 0;
+    if (commands.length) select.value = commands.includes('getblockcount') ? 'getblockcount' : commands[0];
+    document.getElementById('command-count').textContent = commands.length
+        ? `${commands.length} commands available` : 'No commands discovered';
+    loadCommandHelp();
+}
+
+async function loadCommandHelp() {
+    const requestId = ++helpRequestId;
+    const node = document.getElementById('nodeid').value;
+    const method = document.getElementById('method').value;
+    const help = document.getElementById('command-help');
+    if (!node || !method) {
+        help.textContent = 'Select a node and an RPC command to view its usage, required parameters, and optional parameters.';
+        return;
+    }
+
+    help.textContent = 'Loading command details…';
+    try {
+        const response = await fetch('http://127.0.0.1:9999', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ jsonrpc: '1.0', id: node, method: 'help', params: [method] })
+        });
+        const body = await response.text();
+        if (requestId !== helpRequestId) return;
+        let data;
+        try { data = JSON.parse(body); }
+        catch { throw new Error('The node returned an invalid JSON response.'); }
+        if (data.error) {
+            const message = typeof data.error === 'string' ? data.error : data.error.message || JSON.stringify(data.error);
+            help.textContent = 'Command details are unavailable: ' + message;
+        } else if (typeof data.result === 'string' && data.result.trim()) {
+            // Display node-provided help as text so it cannot be interpreted as HTML.
+            help.textContent = data.result;
+        } else {
+            help.textContent = 'The node returned no help text for this command.';
+        }
+    } catch (err) {
+        if (requestId === helpRequestId) help.textContent = 'Could not load command details: ' + err;
+    }
+}
+
 async function send() {
-    const node   = document.getElementById('nodeid').value;
-    const method = document.getElementById('method').value.trim();
+    const node = document.getElementById('nodeid').value;
+    const method = document.getElementById('method').value;
     const params = document.getElementById('params').value.trim();
+    if (!method) {
+        document.getElementById('result').textContent = 'Select an RPC command first.';
+        return;
+    }
 
     let paramsArray = [];
     if (params && params !== '[]') {
-        try { paramsArray = JSON.parse(params); }
-        catch(e) { alert("Params sind kein gültiges JSON-Array!"); return; }
+        try {
+            paramsArray = JSON.parse(params);
+            if (!Array.isArray(paramsArray)) throw new Error('Parameters must be a JSON array.');
+        } catch (error) {
+            alert('Parameters must be a valid JSON array.');
+            return;
+        }
     }
 
-    const payload = {
-        jsonrpc: "2.0",
-        id: node,           // <-- das ist dein "id" Feld, das du im C++-Code abfragst
-        method: method,
-        params: paramsArray
-    };
-
+    const payload = { jsonrpc: '2.0', id: node, method, params: paramsArray };
     try {
-        const response = await fetch('http://127.0.0.1:10666', {
+        const response = await fetch('http://127.0.0.1:9999', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
         });
-
         const text = await response.text();
-        document.getElementById('result').innerText = text;
-
-        // optional: hübsch formatierte JSON-Ausgabe
+        document.getElementById('result').textContent = text;
         try {
             const obj = JSON.parse(text);
-            document.getElementById('result').innerText = JSON.stringify(obj, null, 2);
-        } catch(e) {}
+            document.getElementById('result').textContent = JSON.stringify(obj, null, 2);
+        } catch {}
     } catch (err) {
-        document.getElementById('result').innerText = 'Fehler: ' + err;
+        document.getElementById('result').textContent = 'Request failed: ' + err;
     }
 }
+
+document.getElementById('nodeid').addEventListener('change', updateCommands);
+document.getElementById('method').addEventListener('change', loadCommandHelp);
+document.getElementById('send-button').addEventListener('click', send);
+document.getElementById('clear-button').addEventListener('click', () => {
+    document.getElementById('result').textContent = '';
+});
+loadNodes();
 </script>
 </body>
 </html>
